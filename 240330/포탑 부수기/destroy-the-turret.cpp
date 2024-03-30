@@ -2,7 +2,6 @@
 #include <vector>
 #include <algorithm>
 #include <deque>
-#include <stack>
 
 using namespace std;
 
@@ -10,6 +9,7 @@ int n, m, k, turn;
 int power[10][10];
 int bfs_power[10][10];
 int visited[10][10];
+int head[10][10] = {0, }; // 이전에 어떤 방향에서 왔는지 저장. for문의 i를 저장하면 됨
 int recent_attack[10][10] = {0, };
 int dx[] = {0, 1, 0, -1};
 int dy[] = {1, 0, -1, 0};
@@ -29,6 +29,13 @@ void init_visited(void)
     for (int i = 0; i < n; i++)
         for (int j = 0; j < m; j++)
             visited[i][j] = 0;
+}
+
+void init_head(void)
+{
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < m; j++)
+            head[i][j] = 0;
 }
 
 void print_power(void)
@@ -147,10 +154,12 @@ void bfs(void)
             new_x = (new_x + n) % n;
             new_y = (new_y + m) % m;
             if (new_x == defenser.x && new_y == defenser.y) {
+                head[new_x][new_y] = i;
                 visited[new_x][new_y] = visited[ori_x][ori_y] + 1;
                 return;
             }
             if (power[new_x][new_y] != 0 && !visited[new_x][new_y]) {
+                head[new_x][new_y] = i;
                 visited[new_x][new_y] = visited[ori_x][ori_y] + 1;
                 point next = {new_x, new_y};
                 dq.push_back(next);
@@ -161,34 +170,15 @@ void bfs(void)
 
 vector<point> track_route(void)
 {
-    stack<point> route;
     vector<point> answer;
     point pos = {defenser.x, defenser.y};
+    point new_pos;
     
-    route.push(pos);
-    
-    for (int i = 0; i < visited[defenser.x][defenser.y] - 1; i++) {
-        for (int j = 0; j < 4; j++) {
-            point new_pos = {pos.x + re_dx[j], pos.y + re_dy[j]};
-            new_pos.x = (new_pos.x + n) % n;
-            new_pos.y = (new_pos.y + m) % m;
-            if (visited[new_pos.x][new_pos.y] != 0 && visited[new_pos.x][new_pos.y] == visited[pos.x][pos.y] - 1) {
-                // cout << new_pos.x << ' ' << new_pos.y << '\n';
-                route.push(new_pos);
-                pos = new_pos;
-                j = 5;
-            }
-        }
-    }
-    
-    int sz = (int)route.size();
-    for (int i = 0; i < sz; i++) {
-        // cout << route.top().x << ' ' << route.top().y << '\n';
-        if (!((route.top().x == attacker.x && route.top().y == attacker.y) || (route.top().x == defenser.x && route.top().y == defenser.y))) {
-            // cout << route.top().x << ' ' << route.top().y << '\n';
-            answer.push_back(route.top());
-        }
-        route.pop();
+    while (!(pos.x == attacker.x && pos.y == attacker.y)) {
+        new_pos.x = (pos.x - dx[head[pos.x][pos.y]] + n) % n;
+        new_pos.y = (pos.y - dy[head[pos.x][pos.y]] + m) % m;
+        answer.push_back(new_pos);
+        pos = new_pos;
     }
     
     return answer;
@@ -311,8 +301,6 @@ int main() {
             cout << "LASER" << '\n';
              */
             vector<point> route = track_route();
-            // 아니면 전체 돌리면서 attacker, defenser, vector<int> 처리해줘도 될듯.
-            
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < m; j++) {
                     if (i == attacker.x && j == attacker.y)
