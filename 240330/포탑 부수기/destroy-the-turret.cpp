@@ -172,7 +172,7 @@ vector<point> track_route(void)
             point new_pos = {pos.x + re_dx[j], pos.y + re_dy[j]};
             new_pos.x = (new_pos.x + n) % n;
             new_pos.y = (new_pos.y + m) % m;
-            if (visited[new_pos.x][new_pos.y] != 0) {
+            if (visited[new_pos.x][new_pos.y] != 0 && visited[new_pos.x][new_pos.y] == visited[pos.x][pos.y] - 1) {
                 // cout << new_pos.x << ' ' << new_pos.y << '\n';
                 route.push(new_pos);
                 pos = new_pos;
