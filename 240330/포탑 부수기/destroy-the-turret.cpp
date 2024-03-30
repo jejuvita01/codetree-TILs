@@ -31,6 +31,16 @@ void init_visited(void)
             visited[i][j] = 0;
 }
 
+void print_power(void)
+{
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            cout << power[i][j] << ' ';
+        }
+        cout << '\n';
+    }
+}
+
 point select_attacker(void)
 {
     int min_power = 5001;
@@ -186,40 +196,48 @@ vector<point> track_route(void)
 
 void bomb_attack(void)
 {
-    int x_move[] = {0, 0, 1, 1, 1, -1, -1, -1};
-    int y_move[] = {1, -1, 0, 1, -1, 0, 1, -1};
+    int x_move[] = {-1, -1, -1, 0, 1, 1, 1, 0};
+    int y_move[] = {-1, 0, 1, 1, 1, 0, -1, -1};
     
     power[defenser.x][defenser.y] -= power[attacker.x][attacker.y];
     if (power[defenser.x][defenser.y] < 0)
         power[defenser.x][defenser.y] = 0;
+    
+    // print_power();
+    // cout << '\n';
     
     for (int i = 0; i < 8; i++) {
         int new_x = defenser.x + x_move[i];
         int new_y = defenser.y + y_move[i];
         new_x = (new_x + n) % n;
         new_y = (new_y + m) % m;
-        if (new_x != attacker.x && new_y != attacker.y) {
-            if (power[new_x][new_y] >= (power[attacker.x][attacker.y] / 2))
+        if (!((new_x == attacker.x && new_y == attacker.y) || (new_x == defenser.x && new_y == defenser.y))) {
+            // cout << new_x << ' ' << new_y << '\n';
+            if (power[new_x][new_y] != 0) {
                 power[new_x][new_y] -= (power[attacker.x][attacker.y] / 2);
-            else
-                power[new_x][new_y] = 0;
+                if (power[new_x][new_y] < 0)
+                    power[new_x][new_y] = 0;
+            }
         }
     }
+    
+    // print_power();
     
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
             if (i != attacker.x && j != attacker.y) {
                 if (i != defenser.x && j != defenser.y) {
+                    bool flag = false;
                     for (int k = 0; k < 8; k++) {
                         int new_x = defenser.x + x_move[k];
                         int new_y = defenser.y + y_move[k];
                         new_x = (new_x + n) % n;
                         new_y = (new_y + m) % m;
-                        if (i != new_x && j != new_y) {
-                            if (power[i][j] != 0)
-                                power[i][j]++;
-                        }
+                        if (i == new_x && j == new_y)
+                            flag = true;
                     }
+                    if (!flag)
+                        power[i][j]++;
                 }
             }
         }
@@ -245,16 +263,6 @@ int get_max_power(void)
                 max = power[i][j];
     
     return max;
-}
-
-void print_power(void)
-{
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            cout << power[i][j] << ' ';
-        }
-        cout << '\n';
-    }
 }
 
 int main() {
@@ -291,8 +299,8 @@ int main() {
                 }
                 cout << '\n';
             }
-            */
-            // cout << "LASER" << '\n';
+            cout << "LASER" << '\n';
+             */
             vector<point> route = track_route();
             // 아니면 전체 돌리면서 attacker, defenser, vector<int> 처리해줘도 될듯.
             
