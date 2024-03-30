@@ -129,7 +129,7 @@ point select_defenser(void)
     return max_pos;
 }
 
-void bfs(vector<point> route)
+void bfs(void)
 {
     deque<point> dq;
     
@@ -294,8 +294,7 @@ int main() {
         // 레이저 가능하면 레이저 하고 아니면 포탄 해야함
         init_visited();
         copy_power(bfs_power, power);
-        vector<point> route;
-        bfs(route);
+        bfs();
         if (visited[defenser.x][defenser.y] == 0) {
             // cout << "BOMB" << '\n';
             bomb_attack();
@@ -311,7 +310,7 @@ int main() {
             }
             cout << "LASER" << '\n';
              */
-            // vector<point> route = track_route();
+            vector<point> route = track_route();
             // 아니면 전체 돌리면서 attacker, defenser, vector<int> 처리해줘도 될듯.
             
             for (int i = 0; i < n; i++) {
