@@ -2,6 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include <deque>
+#include <stack>
 
 using namespace std;
 
@@ -11,7 +12,9 @@ int bfs_power[10][10];
 int visited[10][10];
 int recent_attack[10][10] = {0, };
 int dx[] = {0, 1, 0, -1};
-int dy[] = {1, 0, 0, -1};
+int dy[] = {1, 0, -1, 0};
+int re_dx[] = {-1, 0, 1, 0};
+int re_dy[] = {0, -1, 0, 1};
 
 
 typedef struct {
@@ -134,22 +137,51 @@ void bfs(void)
             new_x = (new_x + n) % n;
             new_y = (new_y + m) % m;
             if (new_x == defenser.x && new_y == defenser.y) {
-                visited[new_x][new_y] = 1;
-                bfs_power[defenser.x][defenser.y] -= bfs_power[attacker.x][attacker.y];
-                if (bfs_power[defenser.x][defenser.y] < 0)
-                    bfs_power[defenser.x][defenser.y] = 0;
+                visited[new_x][new_y] = visited[ori_x][ori_y] + 1;
                 return;
             }
-            if (bfs_power[new_x][new_y] != 0 && !visited[new_x][new_y]) {
-                visited[new_x][new_y] = 1;
-                bfs_power[new_x][new_y] -= (bfs_power[attacker.x][attacker.y] / 2);
-                if (bfs_power[new_x][new_y] < 0)
-                    bfs_power[new_x][new_y] = 0;
+            if (power[new_x][new_y] != 0 && !visited[new_x][new_y]) {
+                visited[new_x][new_y] = visited[ori_x][ori_y] + 1;
                 point next = {new_x, new_y};
                 dq.push_back(next);
             }
         }
     }
+}
+
+vector<point> track_route(void)
+{
+    stack<point> route;
+    vector<point> answer;
+    point pos = {defenser.x, defenser.y};
+    
+    route.push(pos);
+    
+    for (int i = 0; i < visited[defenser.x][defenser.y] - 1; i++) {
+        for (int j = 0; j < 4; j++) {
+            point new_pos = {pos.x + re_dx[j], pos.y + re_dy[j]};
+            new_pos.x = (new_pos.x + n) % n;
+            new_pos.y = (new_pos.y + m) % m;
+            if (visited[new_pos.x][new_pos.y] != 0) {
+                // cout << new_pos.x << ' ' << new_pos.y << '\n';
+                route.push(new_pos);
+                pos = new_pos;
+                j = 5;
+            }
+        }
+    }
+    
+    int sz = (int)route.size();
+    for (int i = 0; i < sz; i++) {
+        // cout << route.top().x << ' ' << route.top().y << '\n';
+        if (!((route.top().x == attacker.x && route.top().y == attacker.y) || (route.top().x == defenser.x && route.top().y == defenser.y))) {
+            // cout << route.top().x << ' ' << route.top().y << '\n';
+            answer.push_back(route.top());
+        }
+        route.pop();
+    }
+    
+    return answer;
 }
 
 void bomb_attack(void)
@@ -236,9 +268,10 @@ int main() {
         }
     }
 
-    for (turn = 0; turn < k; turn++) {
+    for (turn = 1; turn <= k; turn++) {
         attacker = select_attacker(); // attacker 구하기
         power[attacker.x][attacker.y] += (n + m); // attacker 공격력 올려주기
+        recent_attack[attacker.x][attacker.y] = turn;
         defenser = select_defenser(); // defenser 구하기
         
         // 레이저 가능하면 레이저 하고 아니면 포탄 해야함
@@ -246,26 +279,57 @@ int main() {
         copy_power(bfs_power, power);
         bfs();
         if (visited[defenser.x][defenser.y] == 0) {
+            // cout << "BOMB" << '\n';
             bomb_attack();
-            // 여기서 + 1 해줘야함
         }
         else {
+            /*
+            cout << "VISITED" << '\n';
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < m; j++) {
-                    if (power[i][j] != bfs_power[i][j] && bfs_power[i][j] != 0 && power[i][j] != 0) {
-                        if (i != attacker.x && j != attacker.y) {
-                            if (i != defenser.x && j != defenser.y) {
-                                bfs_power[i][j]++;
+                    cout << visited[i][j] << ' ';
+                }
+                cout << '\n';
+            }
+            */
+            // cout << "LASER" << '\n';
+            vector<point> route = track_route();
+            // 아니면 전체 돌리면서 attacker, defenser, vector<int> 처리해줘도 될듯.
+            
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    if (i == attacker.x && j == attacker.y)
+                        continue;
+                    else {
+                        if (i == defenser.x && j == defenser.y) {
+                            power[i][j] -= power[attacker.x][attacker.y];
+                            if (power[i][j] < 0)
+                                power[i][j] = 0;
+                        }
+                        else {
+                            bool flag = false;
+                            for (int k = 0; k < route.size(); k++) {
+                                if (route[k].x == i && route[k].y == j)
+                                    flag = true;
+                            }
+                            if (flag) {
+                                power[i][j] -= (power[attacker.x][attacker.y] / 2);
+                                if (power[i][j] < 0)
+                                    power[i][j] = 0;
+                            }
+                            else {
+                                if (power[i][j] != 0)
+                                    power[i][j]++;
                             }
                         }
                     }
                 }
             }
-            copy_power(power, bfs_power); // power에 laser_power 복사하기
         }
+        // print_power();
     }
     
-    // print_power();
+    
     
     cout << get_max_power() << '\n';
 
