@@ -35,32 +35,34 @@ point select_attacker(void)
     point min_pos = {0, 0};
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
-            if (power[i][j] < min_power) { // 공격력이 제일 약한 경우
-                min_power = power[i][j];
-                min_turn = recent_attack[i][j];
-                min_pos.x = i;
-                min_pos.y = j;
-            }
-            else if (power[i][j] == min_power) {
-                if (recent_attack[i][j] > min_turn) { //제일 최근에 공격한 경우
+            if (power[i][j] != 0) {
+                if (power[i][j] < min_power) { // 공격력이 제일 약한 경우
                     min_power = power[i][j];
                     min_turn = recent_attack[i][j];
                     min_pos.x = i;
                     min_pos.y = j;
                 }
-                else if (recent_attack[i][j] == min_turn) {
-                    if (min_pos.x + min_pos.y < i + j) { // 행 + 열 값이 가장 큰 경우
+                else if (power[i][j] == min_power) {
+                    if (recent_attack[i][j] > min_turn) { //제일 최근에 공격한 경우
                         min_power = power[i][j];
                         min_turn = recent_attack[i][j];
                         min_pos.x = i;
                         min_pos.y = j;
                     }
-                    else if (min_pos.x + min_pos.y == i + j) {
-                        if (min_pos.y < j) { // 열 값이 가장 큰 경우
+                    else if (recent_attack[i][j] == min_turn) {
+                        if (min_pos.x + min_pos.y < i + j) { // 행 + 열 값이 가장 큰 경우
                             min_power = power[i][j];
                             min_turn = recent_attack[i][j];
                             min_pos.x = i;
                             min_pos.y = j;
+                        }
+                        else if (min_pos.x + min_pos.y == i + j) {
+                            if (min_pos.y < j) { // 열 값이 가장 큰 경우
+                                min_power = power[i][j];
+                                min_turn = recent_attack[i][j];
+                                min_pos.x = i;
+                                min_pos.y = j;
+                            }
                         }
                     }
                 }
@@ -114,7 +116,7 @@ point select_defenser(void)
     return max_pos;
 }
 
-void bfs(void) // 여기서 그냥 막지우고 복사하면 안될거같음. 이거 수정하기, 그리고 최단경로 우선순위도 달라서 잘 보고 하기
+void bfs(void)
 {
     deque<point> dq;
     
@@ -171,6 +173,25 @@ void bomb_attack(void)
                 power[new_x][new_y] = 0;
         }
     }
+    
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            if (i != attacker.x && j != attacker.y) {
+                if (i != defenser.x && j != defenser.y) {
+                    for (int k = 0; k < 8; k++) {
+                        int new_x = defenser.x + x_move[k];
+                        int new_y = defenser.y + y_move[k];
+                        new_x = (new_x + n) % n;
+                        new_y = (new_y + m) % m;
+                        if (i != new_x && j != new_y) {
+                            if (power[i][j] != 0)
+                                power[i][j]++;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 void copy_power(int dest[10][10], int copy[10][10])
@@ -178,16 +199,6 @@ void copy_power(int dest[10][10], int copy[10][10])
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
             dest[i][j] = copy[i][j];
-        }
-    }
-}
-
-void plus_power(void)
-{
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            if (power[i][j] != 0 && (i != attacker.x && j != attacker.y) && (i != defenser.x && j != defenser.y))
-                power[i][j]++;
         }
     }
 }
@@ -202,6 +213,16 @@ int get_max_power(void)
                 max = power[i][j];
     
     return max;
+}
+
+void print_power(void)
+{
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            cout << power[i][j] << ' ';
+        }
+        cout << '\n';
+    }
 }
 
 int main() {
@@ -224,12 +245,27 @@ int main() {
         init_visited();
         copy_power(bfs_power, power);
         bfs();
-        if (visited[defenser.x][defenser.y] == 0)
+        if (visited[defenser.x][defenser.y] == 0) {
             bomb_attack();
-        else
+            // 여기서 + 1 해줘야함
+        }
+        else {
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    if (power[i][j] != bfs_power[i][j] && bfs_power[i][j] != 0 && power[i][j] != 0) {
+                        if (i != attacker.x && j != attacker.y) {
+                            if (i != defenser.x && j != defenser.y) {
+                                bfs_power[i][j]++;
+                            }
+                        }
+                    }
+                }
+            }
             copy_power(power, bfs_power); // power에 laser_power 복사하기
-        plus_power();
+        }
     }
+    
+    // print_power();
     
     cout << get_max_power() << '\n';
 
