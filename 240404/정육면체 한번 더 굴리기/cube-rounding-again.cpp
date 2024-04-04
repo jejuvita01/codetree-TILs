@@ -17,8 +17,7 @@ int new_x, new_y;
 int direction; // 0: 오, 1: 왼, 2: 상, 3: 하
 int dx[] = {0, 0, -1, 1}; // 오, 왼, 상, 하
 int dy[] = {1, -1, 0, 0}; // 오, 왼, 상, 하
-int cur_dice_top; // 현재 주사위의 가장 윗면
-vector<int> dice; // 주사위의 각각 오, 왼, 상, 하에 무엇이 있는지를 저장한 벡터
+int d_top, d_right, d_left, d_up, d_down, d_bottom; // 주사위 각 면에 적혀있는 숫자를 저장하는 변수
 int visited[20][20] = {0, };
 int answer = 0;
 
@@ -39,10 +38,11 @@ bool is_inside(int new_x, int new_y)
 
 void move_dice()
 {
+    // 주사위의 position 업데이트
     new_x = pos_x + dx[direction];
     new_y = pos_y + dy[direction];
     
-    if (!is_inside(new_x, new_y)) { // 맵을 벗어날때
+    if (!is_inside(new_x, new_y)) { // 주사위가 맵을 벗어날때
         switch (direction) {
             case RIGHT: direction = LEFT; break;
             case LEFT: direction = RIGHT; break;
@@ -57,7 +57,35 @@ void move_dice()
     pos_x = new_x;
     pos_y = new_y;
     
-    cur_dice_top = dice[(cur_dice_top - 1 + direction) % 6];
+    // 주사위 정보 업데이트
+    // switch 문으로 top, right, up만 정하고 그 반대면은 7 에서 뺀 값
+    switch (direction) {
+        case RIGHT:
+            d_right = d_top;
+            d_top = d_left;
+            d_left = 7 - d_right;
+            d_bottom = 7 - d_top;
+            break;
+        case LEFT:
+            d_left = d_top;
+            d_top = d_right;
+            d_right = 7 - d_left;
+            d_bottom = 7 - d_top;
+            break;
+        case UP:
+            d_up = d_top;
+            d_top = d_down;
+            d_down = 7 - d_up;
+            d_bottom = 7 - d_top;
+            break;
+        case DOWN:
+            d_down = d_top;
+            d_top = d_up;
+            d_up = 7 - d_down;
+            d_bottom = 7 - d_top;
+            break;
+        default: break;
+    }
 }
 
 void dfs(int n, int x, int y)
@@ -102,7 +130,7 @@ int get_score()
 
 int get_direction(void)
 {
-    int cur_dice_bottom = 7 - cur_dice_top;
+    int cur_dice_bottom = d_bottom;
     int cur_map_num = map[pos_x][pos_y];
     
     if (cur_dice_bottom > cur_map_num) {
@@ -129,14 +157,15 @@ int get_direction(void)
         direction = direction;
     
     return direction;
-        
 }
 
 int main(void)
 {
     // 주사위 정보 저장 (윗면, 오, 왼, 상, 하, 바닥 에 무엇이 있는지)
-    dice.push_back(1); dice.push_back(3); dice.push_back(4); dice.push_back(5); dice.push_back(2); dice.push_back(6);
-    cur_dice_top = 1;
+    // top, right, up만 정하고 그 반대면은 7 에서 뺀 값
+    d_top = 1; d_bottom = 7 - d_top;
+    d_right = 3; d_left = 7 - d_right;
+    d_up = 5; d_down = 7 - d_up;
     
     cin >> n >> m;
     
@@ -152,6 +181,7 @@ int main(void)
     direction = RIGHT;
     
     for (int i = 0; i < m; i++) {
+        // cout << d_top << '\n';
         move_dice();
         init_visited();
         answer += get_score();
