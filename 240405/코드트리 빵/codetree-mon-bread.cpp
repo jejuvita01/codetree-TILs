@@ -218,9 +218,21 @@ bool route_changed(int u)
 
 void move_user(int u)
 {
+    for (int i = 0; i < 4; i++) {
+        point next;
+        next.x = user[u].x + dx[i];
+        next.y = user[u].y + dy[i];
+        if (next.x == store[u].x && next.y == store[u].y) {
+            user[u].x = next.x;
+            user[u].y = next.y;
+            activate_user--;
+            return;
+        }
+    }
+    
     vector<point> head[15][15];
     if (route[u].size() == 0) { // 루트가 생성되지 않았거나
-//        cout << u  << "루트 생성 안됨" << '\n';
+        // cout << u  << "루트 생성 안됨" << '\n';
         route[u].clear();
         init_visited();
         dfs_user_to_store(u, head);
@@ -235,7 +247,7 @@ void move_user(int u)
 //        cout << '\n';
     }
     else if (route_changed(u)) { // 루트가 변경되었을 때
-//        cout << u << "루트 변경됨" << '\n';
+        // cout << u << "루트 변경됨" << '\n';
         route[u].clear();
         init_visited();
         dfs_user_to_store(u, head);
@@ -326,8 +338,8 @@ int main(void)
                 map[user[u].x][user[u].y] = -1; // 유저가 편의점에 들어가면 그 좌표 지나가기 불가
         }
 //        print_map();
-//        if (answer_time > 10)
-//            break;
+        if (answer_time > 10)
+            break;
     }
     
     cout << answer_time << '\n';
