@@ -148,10 +148,11 @@ void find_basecamp(int u_idx) // vector<int> close_base에 각 유저가 가야�
     close_base.push_back(min_base_idx);
 }
 
-/*
-void dfs_user_to_store(int u)
+
+void dfs_user_to_store(int u, vector<point> head[15][15])
 {
     deque<point> dq;
+    point p = user[u];
     
     visited[p.x][p.y] = 1;
     dq.push_back(p);
@@ -167,14 +168,37 @@ void dfs_user_to_store(int u)
             next.y = cur.y + dy[i];
             if (!is_inside(next))
                 continue;
-            if (visited[next.x][next.y] == 0) {
-                visited[next.x][next.y] = visited[cur.x][cur.y] + 1;
+            if (map[next.x][next.y] == -1)
+                continue;
+            if (next.x == store[u].x && next.y == store[u].y) {
+                head[store[u].x][store[u].y].push_back(cur);
+                return;
+            }
+            else if (visited[next.x][next.y] == 0) {
+                visited[next.x][next.y] = 1;
                 dq.push_back(next);
+                head[next.x][next.y].push_back(cur);
             }
         }
     }
 }
-*/
+
+point track_route(int u, vector<point> head[15][15])
+{
+    if (head[store[u].x][store[u].y].size() == 1) {
+        point p = head[store[u].x][store[u].y][0];
+        
+        while (!(p.x == user[u].x && p.y == user[u].y)) {
+            point next = head[p.x][p.y][0];
+            p.x = next.x;
+            p.y = next.y;
+        }
+        
+        return p;
+    }
+    
+    return store[u];
+}
 
 void move_user(int u)
 {
@@ -182,6 +206,7 @@ void move_user(int u)
     // 틀리면 여기 의심해보기
     point pos = user[u];
     int min_dist = dist(user[u], store[u]);
+    bool is_moved = false;
     
     for (int i = 0; i < 4; i++) {
         point next;
@@ -194,8 +219,19 @@ void move_user(int u)
         if (dist(next, store[u]) < min_dist) {
             user[u].x = next.x;
             user[u].y = next.y;
+            is_moved = true;
             break;
         }
+    }
+    
+    if (!is_moved) {
+        vector<point> head[15][15];
+        init_visited();
+        dfs_user_to_store(u, head);
+        init_visited();
+        point next = track_route(u, head);
+        user[u].x = next.x;
+        user[u].y = next.y;
     }
 }
 
@@ -280,8 +316,8 @@ int main(void)
                 map[user[u].x][user[u].y] = -1; // 유저가 편의점에 들어가면 그 좌표 지나가기 불가
         }
 //        print_map();
-        if (answer_time > 10)
-            break;
+//        if (answer_time > 10)
+//            break;
     }
     
     cout << answer_time << '\n';
