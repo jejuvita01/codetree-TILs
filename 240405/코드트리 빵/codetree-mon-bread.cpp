@@ -13,6 +13,7 @@ typedef struct {
 int n, m;
 vector<int> map[15];
 int visited[15][15] = {0, };
+int activate_user;
 vector<point> basecamp; // basecamp의 위치를 저장
 vector<point> store; // 각 유저가 가야할 편의점의 위치를 저장
 vector<point> user; // 유저의 위치를 저장
@@ -233,6 +234,9 @@ void move_user(int u)
         user[u].x = next.x;
         user[u].y = next.y;
     }
+    
+    if (user[u].x == store[u].x && user[u].y == store[u].y)
+        activate_user--;
 }
 
 int moving_user(void)
@@ -250,6 +254,8 @@ int moving_user(void)
 int main(void)
 {
     cin >> n >> m;
+    
+    activate_user = m;
     
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
@@ -304,7 +310,7 @@ int main(void)
 //        print_map();
     }
     
-    while (moving_user() != 0) {
+    while (activate_user != 0) {
         answer_time++;
 //        cout << '\n' << "TIME: " << answer_time << '\n';
         for (int u = 0; u < user.size(); u++) {
