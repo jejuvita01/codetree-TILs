@@ -17,7 +17,6 @@ int activate_user;
 vector<point> basecamp; // basecamp의 위치를 저장
 vector<point> store; // 각 유저가 가야할 편의점의 위치를 저장
 vector<point> user; // 유저의 위치를 저장
-vector<point> route[30]; // 유저별로 최단 거리 루트 저장
 vector<int> close_base; // 각 유저가 가야할 basecamp의 번호 저장 [0, ]
 int answer_time = 0;
 int dx[4] = {-1, 0, 0, 1};
@@ -157,7 +156,6 @@ void dfs_user_to_store(int u, vector<point> head[15][15])
     point p = user[u];
     
     visited[p.x][p.y] = 1;
-    // head[p.x][p.y].push_back(p);
     dq.push_back(p);
     
     while (!dq.empty()) {
@@ -186,85 +184,71 @@ void dfs_user_to_store(int u, vector<point> head[15][15])
     }
 }
 
-void track_route(int u, vector<point> head[15][15])
+point track_route(int u, vector<point> head[15][15])
 {
     if (head[store[u].x][store[u].y].size() == 1) {
-        route[u].clear();
-        route[u].push_back(store[u]);
         point p = head[store[u].x][store[u].y][0];
-        route[u].push_back(p);
         
         while (!(p.x == user[u].x && p.y == user[u].y)) {
             point next = head[p.x][p.y][0];
             p.x = next.x;
             p.y = next.y;
-            if (p.x == user[u].x && p.y == user[u].y)
-                break;
-            route[u].push_back(p);
         }
-    }
-}
-
-bool route_changed(int u)
-{
-    for (int i = 0; i < route[u].size(); i++) {
-        point p = route[u][i];
-        if (map[p.x][p.y] == -1)
-            return true;
+        
+        return p;
     }
     
-    return false;
+    return store[u];
 }
 
 void move_user(int u)
 {
+    // 일단 dfs로 최단경로 안구하고 상좌우하 순으로 가까워지면(제곱거리 짧으면) 가는걸로 했는데,
+    // 틀리면 여기 의심해보기
+    point pos = user[u];
+    int min_dist = dist(user[u], store[u]);
+    bool is_moved = false;
+    
     for (int i = 0; i < 4; i++) {
         point next;
-        next.x = user[u].x + dx[i];
-        next.y = user[u].y + dy[i];
-        if (next.x == store[u].x && next.y == store[u].y) {
+        next.x = pos.x + dx[i];
+        next.y = pos.y + dy[i];
+        if (!is_inside(next))
+            continue;
+        if (map[next.x][next.y] == -1)
+            continue;
+        if (dist(next, store[u]) < min_dist) {
             user[u].x = next.x;
             user[u].y = next.y;
-            activate_user--;
-            return;
+            is_moved = true;
+            break;
         }
     }
     
-    vector<point> head[15][15];
-    if (route[u].size() == 0) { // 루트가 생성되지 않았거나
-        // cout << u  << "루트 생성 안됨" << '\n';
-        route[u].clear();
-        init_visited();
-        dfs_user_to_store(u, head);
-        point dummy = {0, 0};
-        route[u].push_back(dummy);
-        track_route(u, head);
-        reverse(route[u].begin(), route[u].end());
-        
-//        for (int i = 0; i < route[u].size(); i++) {
-//            cout << '(' << route[u][i].x << ", " << route[u][i].y << ")" << ' ';
-//        }
-//        cout << '\n';
-    }
-    else if (route_changed(u)) { // 루트가 변경되었을 때
-        // cout << u << "루트 변경됨" << '\n';
-        route[u].clear();
+    if (!is_moved) {
+        vector<point> head[15][15];
         init_visited();
         dfs_user_to_store(u, head);
         init_visited();
-        point dummy = {0, 0};
-        route[u].push_back(dummy);
-        track_route(u, head);
-        reverse(route[u].begin(), route[u].end());
+        point next = track_route(u, head);
+        user[u].x = next.x;
+        user[u].y = next.y;
     }
-    
-    point next = route[u][0];
-    route[u].erase(route[u].begin(), route[u].begin() + 1);
-    user[u].x = next.x;
-    user[u].y = next.y;
     
     if (user[u].x == store[u].x && user[u].y == store[u].y)
         activate_user--;
+}
+
+int moving_user(void)
+{
+    int answer = m;
+    
+    for (int i = 0; i < user.size(); i++) {
+        if (user[i].x == store[i].x && user[i].y == store[i].y)
+            answer--;
+    }
+    
+    return answer;
 }
 
 int main(void)
@@ -338,8 +322,8 @@ int main(void)
                 map[user[u].x][user[u].y] = -1; // 유저가 편의점에 들어가면 그 좌표 지나가기 불가
         }
 //        print_map();
-        if (answer_time > 10)
-            break;
+//        if (answer_time > 10)
+//            break;
     }
     
     cout << answer_time << '\n';
