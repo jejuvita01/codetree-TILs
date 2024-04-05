@@ -15,11 +15,22 @@ vector<point> santa_pos(30);
 vector<int> santa_score;
 vector<int> santa_status; // 0: 정상, 1: 기절, 2: 탈락
 vector<int> santa_cooltime; // 기절한 산타가 일어나는 턴을 저장
-int santa_cnt;
 int d_x[8] = {0, 0, 1, 1, 1, -1, -1, -1};
 int d_y[8] = {1, -1, 0, 1, -1, 0, 1, -1};
 int s_x[4] = {-1, 0, 1, 0};
 int s_y[4] = {0, 1, 0, -1};
+
+int santa_cnt(void)
+{
+    int answer = p;
+    
+    for (int i = 0; i < p; i++) {
+        if (santa_status[i] == 2)
+            answer--;
+    }
+    
+    return answer;
+}
 
 void print_map(void)
 {
@@ -81,10 +92,8 @@ void interaction(int idx, int who, int direction)
         santa_pos[idx].y -= s_y[direction];
     }
     
-    if (!is_inside(santa_pos[idx])) {
+    if (!is_inside(santa_pos[idx]))
         santa_status[idx] = 2;
-        santa_cnt--;
-    }
     
     for (int i = 0; i < p; i++) {
         if (santa_pos[i].x == santa_pos[idx].x && santa_pos[i].y == santa_pos[idx].y && i != idx)
@@ -98,40 +107,38 @@ void collision(int idx, int who, int direction, int turn)
 {
     if (who == 1) { // deer이 이동했을 때
         // 산타 점수 += c
-        // cout << "DEER_MOVE_SO_COLLIDE" << '\n';
-        // cout << "SANTA:" << idx + 1 << '\n';
+//        cout << "DEER_MOVE_SO_COLLIDE" << '\n';
+//        cout << "SANTA:" << idx + 1 << '\n';
         santa_score[idx] += c;
         // deer가 이동한 방향만큼 c 칸 밀려남
         santa_pos[idx].x += d_x[direction] * c;
         santa_pos[idx].y += d_y[direction] * c;
-        // cout << santa_pos[idx].x << ' ' << santa_pos[idx].y << '\n';
+//        cout << santa_pos[idx].x << ' ' << santa_pos[idx].y << '\n';
     }
     
     else { // santa가 이동했을 때
         // 산타 점수 += d
-        // cout << "SANTA_MOVE_SO_COLLIDE" << '\n';
-        // cout << "SANTA" << idx + 1 << ": " << santa_pos[idx].x << ' ' << santa_pos[idx].y << '\n';
+//        cout << "SANTA_MOVE_SO_COLLIDE" << '\n';
+//        cout << "SANTA" << idx + 1 << ": " << santa_pos[idx].x << ' ' << santa_pos[idx].y << '\n';
         santa_score[idx] += d;
         // santa가 이동한 방향의 반대로 d칸 밀려남
         santa_pos[idx].x -= s_x[direction] * d;
         santa_pos[idx].y -= s_y[direction] * d;
-        // cout << santa_pos[idx].x << ' ' << santa_pos[idx].y << '\n';
+//        cout << santa_pos[idx].x << ' ' << santa_pos[idx].y << '\n';
     }
     
     // map 바깥이면 탈락
-    if (!is_inside(santa_pos[idx])) {
+    if (!is_inside(santa_pos[idx]))
         santa_status[idx] = 2;
-        santa_cnt--;
-    }
     else {
-        // cout << "기절" << '\n';
+//        cout << "기절" << '\n';
         santa_status[idx] = 1;
         santa_cooltime[idx] = turn + 2;
     }
     // 해당 자리에 산타가 있으면 밀기
     for (int i = 0; i < p; i++) {
         if (santa_pos[i].x == santa_pos[idx].x && santa_pos[i].y == santa_pos[idx].y && i != idx) {
-            // cout << "INTERACTION WITH " << i + 1 << " AND " << idx + 1 << '\n';
+//            cout << "INTERACTION WITH " << i + 1 << " AND " << idx + 1 << '\n';
             interaction(i, who, direction); // 밀릴사람, 이동한 것, 이동해 온 방향
         }
     }
@@ -259,8 +266,6 @@ int main(void)
     deer.x -= 1;
     deer.y -= 1;
     
-    santa_cnt = p;
-    
     for (int i = 0; i < p; i++) {
         int s;
         point p;
@@ -274,28 +279,34 @@ int main(void)
         santa_cooltime.push_back(0);
     }
     
-    // print_map();
+//    print_map();
     
     for (int i = 0; i < m; i++) {
-        // cout << "**TURN:" << i + 1 << '\n';
+//        cout << "**TURN:" << i + 1 << '\n';
         refresh_santa(i);
-        if (santa_cnt == 0)
+        if (santa_cnt() == 0)
             break;
         move_deer(i);
-        if (santa_cnt == 0)
+        if (santa_cnt() == 0)
             break;
         for (int s = 0; s < santa_status.size(); s++) {
             if (santa_status[s] == 0)
                 move_santa(s, i);
         }
-        if (santa_cnt == 0)
+        if (santa_cnt() == 0)
             break;
         santa_reward();
-        // print_map();
-        // cout << "SCORE" << '\n';
+//        print_map();
+//        cout << "SCORE" << '\n';
+//        for (int i = 0; i < p; i++) {
+//            cout << i + 1 << ':';
+//            cout << santa_score[i] << ' ';
+//        }
+//        cout << '\n';
     }
     
     for (int i = 0; i < p; i++) {
+//        cout << santa_status[i] << ':';
         cout << santa_score[i] << ' ';
     }
     cout << '\n';
