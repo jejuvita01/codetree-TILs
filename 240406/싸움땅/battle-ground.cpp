@@ -26,14 +26,35 @@ bool comp(int a, int b) // 벡터를 오름차순으로 정렬할때 쓸 함수
 
 void print_score(void)
 {
-//    cout << '\n';
+    // cout << "\nSCORE\n";
     
     for (int u = 0; u < m; u++) {
 //        cout << "U" << u << ":" << user[u].score << ' '; // 디버깅용
         cout << user[u].score << ' ';
     }
     
-//    cout << '\n';
+    // cout << '\n';
+}
+
+void print_user(void)
+{
+    cout << "\nUSER MAP\n";
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            int is_user = -1;
+            for (int u = 0; u < user.size(); u++) {
+                if (user[u].x == i && user[u].y == j) {
+                    is_user = u;
+                    break;
+                }
+            }
+            if (is_user == -1)
+                cout << "0  ";
+            else
+                cout << "U" << is_user << ' ';
+        }
+        cout <<'\n';
+    }
 }
 
 bool is_inside(int x, int y)
@@ -92,7 +113,7 @@ void move_user(int u)
     // 3. 이동한 칸에 플레이어가 있으면
     else { // fighter vs u (user의 인덱스들)
         // 싸운다
-//        cout << "싸운다" << '\n';
+        // cout << "싸운다" << '\n';
         int loser, winner;
         if (user[fighter].power + user[fighter].gun > user[u].power + user[u].gun) { // fighter가 세면
             loser = u;
@@ -113,7 +134,7 @@ void move_user(int u)
             }
         }
         
-//        cout << "LOSER:" << loser << ", WINNER:" << winner << '\n';
+        // cout << "LOSER:" << loser << ", WINNER:" << winner << '\n';
         // winner의 점수를 올려준다
         user[winner].score += ((user[winner].power + user[winner].gun) - (user[loser].power + user[loser].gun));
         
@@ -138,9 +159,11 @@ void move_user(int u)
             // 이동하려는 곳에 user가 있거나
             for (int k = 0; k < user.size(); k++) {
                 if (k != loser && k != winner) {
-                    if (user[k].x == new_x && user[k].y == new_y) {
-                        is_user = true;
-                        k = (int)user.size() + 1;
+                    if (is_inside(new_x, new_y)) {
+                        if (user[k].x == new_x && user[k].y == new_y) {
+                            is_user = true;
+                            k = (int)user.size() + 1;
+                        }
                     }
                 }
             }
@@ -153,6 +176,7 @@ void move_user(int u)
                 user[loser].d = new_d; // loser의 d를 수정해준다
                 user[loser].x = new_x;
                 user[loser].y = new_y;
+                break;
             }
         }
         
@@ -167,6 +191,9 @@ void move_user(int u)
                 map[lx][ly].erase(map[lx][ly].begin(), map[lx][ly].begin() + 1);
             }
         }
+        
+        // cout << "LOSER: " << lx << ' ' << ly << '\n';
+        // cout << "WINNER: " << user[winner].x << ' ' << user[winner].y << '\n';
     }
 }
 
@@ -199,6 +226,8 @@ int main(void)
         for (int u = 0; u < m; u++) {
             move_user(u);
         }
+        // print_user();
+        // print_score();
     }
     
     print_score();
