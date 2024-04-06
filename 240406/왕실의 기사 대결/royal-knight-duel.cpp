@@ -116,8 +116,8 @@ bool is_pushable(int k, int dir)
 //                return false;
             if (is_wall_exist(next)) // 벽이 존재하면 false를 return
                 return false;
-//            if (dq.front().index == k)
-//                continue; 여기 뭔가 수상함;;;;;;;;;;
+            if (dq.front().index == k)
+                continue; // 여기 뭔가 수상함;;;;;;;;;;
             for (int i = 0; i < knight.size(); i++) { // 이동 가능하면 dq에 push
                 if (i == next.index)
                     continue;
