@@ -68,6 +68,25 @@ bool is_collide(knight_info a, knight_info b)
         return true;
     
     return false;
+
+    /*
+    int visited[40][40] = {0, };
+    
+    for (int i = a.x; i < a.x + a.h; i++) {
+        for (int j = a.y; j < a.y + a.w; j++) {
+            visited[i][j] = 1;
+        }
+    }
+    
+    for (int i = b.x; i < b.x + b.h; i++) {
+        for (int j = b.y; j < b.y + b.w; j++) {
+            if (visited[i][j] == 1)
+                return true;
+        }
+    }
+    
+    return false;
+     */
 }
 
 bool is_pushable(int k, int dir)
@@ -116,8 +135,8 @@ bool is_pushable(int k, int dir)
 //                return false;
             if (is_wall_exist(next)) // 벽이 존재하면 false를 return
                 return false;
-            if (dq.front().index == k)
-                continue; // 여기 뭔가 수상함;;;;;;;;;;
+//            if (dq.front().index == k)
+//                continue; 여기 뭔가 수상함;;;;;;;;;;
             for (int i = 0; i < knight.size(); i++) { // 이동 가능하면 dq에 push
                 if (i == next.index)
                     continue;
@@ -172,6 +191,8 @@ void push_knights(int k, int dir, vector<int>& pushed)
         }
         for (int i = 0; i < knight.size(); i++) { // 이동 가능하면 dq에 push
             if (i == index)
+                continue;
+            if (i == k)
                 continue;
             if (knight[i].alive == false)
                 continue;
