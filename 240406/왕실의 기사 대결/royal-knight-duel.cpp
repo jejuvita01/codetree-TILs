@@ -60,6 +60,7 @@ bool is_wall_exist(knight_info k)
 bool is_collide(knight_info a, knight_info b)
 {
     // 여기 이상할수도 있음
+    /*
     if (b.x < a.x + a.h && a.x + a.h <= b.x + b.h && b.y < a.y + a.w && a.y + a.w <= b.y + b.w) {
 //        cout << a.index + 1 << "와 " << b.index + 1 << " 충돌\n";
         return true;
@@ -68,8 +69,8 @@ bool is_collide(knight_info a, knight_info b)
         return true;
     
     return false;
-
-    /*
+    */
+    
     int visited[40][40] = {0, };
     
     for (int i = a.x; i < a.x + a.h; i++) {
@@ -86,7 +87,6 @@ bool is_collide(knight_info a, knight_info b)
     }
     
     return false;
-     */
 }
 
 bool is_pushable(int k, int dir)
@@ -131,20 +131,21 @@ bool is_pushable(int k, int dir)
             dq.pop_front();
             next.x += dx[dir];
             next.y += dy[dir];
-//            if (!is_inside(next)) // 맵을 벗어나거나
-//                return false;
+            if (!is_inside(next)) // 맵을 벗어나거나
+                return false;
             if (is_wall_exist(next)) // 벽이 존재하면 false를 return
                 return false;
-//            if (dq.front().index == k)
-//                continue; 여기 뭔가 수상함;;;;;;;;;;
-            for (int i = 0; i < knight.size(); i++) { // 이동 가능하면 dq에 push
+//            if (next.index == k)
+//                continue; // 여기 뭔가 수상함;;;;;;;;;;
+            for (int i = 0; i < knight.size(); i++) { // 이동 가능하고 충돌이 있으면 dq에 push
                 if (i == next.index)
                     continue;
+//                if (i == k)
+//                    continue;
                 if (knight[i].alive == false)
                     continue;
-                if (!is_collide(next, knight[i]))
-                    continue;
-                dq.push_back(knight[i]);
+                if (is_collide(next, knight[i]))
+                    dq.push_back(knight[i]);
             }
         }
     }
@@ -181,24 +182,19 @@ void push_knights(int k, int dir, vector<int>& pushed)
     while (dq.size() != 0) {// 밀 기사가 있으면 밀기
         int index = dq.front().index;
         dq.pop_front();
-        if (index != k)
+        if (index != k && knight[index].alive == true)
             pushed.push_back(index);
         knight[index].x += dx[dir];
         knight[index].y += dy[dir];
-        if (!is_inside(knight[index])) {
-//            cout << index + 1 << " 기사 밀려 죽음\n";
-            knight[index].alive = false;
-        }
         for (int i = 0; i < knight.size(); i++) { // 이동 가능하면 dq에 push
             if (i == index)
                 continue;
-            if (i == k)
-                continue;
+//            if (i == k)
+//                continue;
             if (knight[i].alive == false)
                 continue;
-            if (!is_collide(knight[index], knight[i]))
-                continue;
-            dq.push_back(knight[i]);
+            if (is_collide(knight[index], knight[i]))
+                dq.push_back(knight[i]);
         }
     } // 없으면 끝
 }
@@ -217,17 +213,19 @@ int how_many_trap(int k)
     return answer;
 }
 
-void calculate_damage(vector<int> pushed)
+void calculate_damage(int k, vector<int> pushed)
 {
 //    cout << "DAMAGE\n";
     for (int i = 0; i < pushed.size(); i++) {// 밀려진 기사들 중
-        int damage = how_many_trap(pushed[i]); // 함정이 몇개 포함됐는지 세기
-//        cout << pushed[i] + 1 << "번 기사, damage " << damage << '\n';
-        knight[pushed[i]].now_hp -= damage;
-//        cout << knight[pushed[i]].now_hp << '\n';
-        if (knight[pushed[i]].now_hp <= 0) { // 만약 (now_hp - 함정 개수) <= 0이면
-//            cout << i + 1 << "번 기사 함정에 죽음\n";
-            knight[pushed[i]].alive = false; // 비활성화하기
+        if (knight[pushed[i]].alive && pushed[i] != k) {
+            int damage = how_many_trap(pushed[i]); // 함정이 몇개 포함됐는지 세기
+            //        cout << pushed[i] + 1 << "번 기사, damage " << damage << '\n';
+            knight[pushed[i]].now_hp -= damage;
+            //        cout << knight[pushed[i]].now_hp << '\n';
+            if (knight[pushed[i]].now_hp <= 0) { // 만약 (now_hp - 함정 개수) <= 0이면
+//                cout << i + 1 << "번 기사 함정에 죽음\n";
+                knight[pushed[i]].alive = false; // 비활성화하기
+            }
         }
     }
 }
@@ -272,7 +270,7 @@ int main(void)
 //            cout << "밀었다\n";
             vector<int> pushed; // 밀린 기사의 인덱스를 저장하는 벡터
             push_knights(k_num, dir, pushed); // 밀기
-            calculate_damage(pushed); // 함정이 있는 것은 데미지 입히기
+            calculate_damage(k_num, pushed); // 함정이 있는 것은 데미지 입히기
         }
 //        cout << "기사 상태\n";
 //        for (int u = 0; u < n; u++) {
