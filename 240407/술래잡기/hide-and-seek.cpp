@@ -210,7 +210,7 @@ void seek(int turn)
             continue;
         if ((x_start <= runners[r].x && runners[r].x <= x_end) && (y_start <= runners[r].y && runners[r].y <= y_end)) {// 만약 술래의 시야에 있으면
 //            cout << r << "걸렸다\n";
-            if (tree_map[runners[r].x][runners[r].y] == 0) { // 그 자리에 나무가 있으면
+            if (tree_map[runners[r].x][runners[r].y] == 0) { // 그 자리에 나무가 없으면
                 runners[r].alive = false; // 죽는다
                 kill++; // 죽인 개수를 올려준다
             }
