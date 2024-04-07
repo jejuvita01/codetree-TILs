@@ -39,7 +39,7 @@ chaser_info chaser;
 vector<tree_info> trees;
 vector<runner_info> runners;
 int tree_map[99][99] = {0, }; // 나무가 있으면 1, 없으면 0
-int dx[] = {-1, 0, 1, 0};
+int dx[] = {-1, 0, 1, 0}; // 상 우 하 좌
 int dy[] = {0, 1, 0, -1};
 
 void print_map(void)
@@ -108,16 +108,21 @@ void move_chaser(void)
             chaser.y += dy[chaser.dir];
             chaser.move_cnt++;
             if (chaser.x == (n / 2) - 1 && chaser.y == n / 2) {
-                chaser.x = n / 2;
-                chaser.y = n / 2;
-                chaser.dir = 0;
-                chaser.spin = 0;
-                return;
+//                chaser.x = n / 2;
+//                chaser.y = n / 2;
+                chaser.dir = 2;
+                // return;
             }
         }
         if (chaser.move_cnt == chaser.length * 4 - 4) { // 변의 길이를 바꿔줘야 할 때
             if (chaser.x == n / 2 && chaser.y == n / 2) {
-                chaser.spin = 0; // 시계로 바꿔야함
+                chaser.dir = 0;
+                return;
+                // chaser.spin = 0; // 시계로 바꿔야함
+            }
+            else if (chaser.x == n / 2 - 1 && chaser.y == n / 2) {
+                chaser.length = 3;
+                chaser.move_cnt = 7;
             }
             else {
                 chaser.length -= 2;
@@ -179,17 +184,33 @@ void seek(int turn)
     int x_end = chaser.x + 2 * dx[chaser.dir];
     int y_start = chaser.y;
     int y_end = chaser.y + 2 * dy[chaser.dir];
+    
+    if (x_start > x_end) {
+        int tmp = x_start;
+        x_start = x_end;
+        x_end = tmp;
+    }
+    if (y_start > y_end) {
+        int tmp = y_start;
+        y_start = y_end;
+        y_end = tmp;
+    }
+    
+    if (x_start < 0)
+        x_start = 0;
+    if (x_end > n)
+        x_end = n - 1;
+    if (y_start < 0)
+        y_start = 0;
+    if (y_end > n)
+        y_end = n - 1;
+    
     for (int r = 0; r < m; r++) {
         if (runners[r].alive == false)
             continue;
-        if (x_start <= runners[r].x && runners[r].x <= x_end && y_start <= runners[r].y && runners[r].y <= y_end) {// 만약 술래의 시야에 있으면
+        if ((x_start <= runners[r].x && runners[r].x <= x_end) && (y_start <= runners[r].y && runners[r].y <= y_end)) {// 만약 술래의 시야에 있으면
 //            cout << r << "걸렸다\n";
-            if (tree_map[runners[r].x][runners[r].y] == 1) { // 그 자리에 나무가 있으면
-//                cout << "나무 덕에 살았다\n";
-                continue; // 살고
-            }
-            else {// 그 자리에 나무가 없으면
-//                cout << "죽었다\n";
+            if (tree_map[runners[r].x][runners[r].y] == 0) { // 그 자리에 나무가 있으면
                 runners[r].alive = false; // 죽는다
                 kill++; // 죽인 개수를 올려준다
             }
@@ -225,10 +246,6 @@ int main(void)
         runners.push_back(r);
     }
     
-//    for (int i = 0; i < m; i++) {
-//        cout << runners[i].x << runners[i].y << runners[i].alive << runners[i].dir << '\n';
-//    }
-    
     for (int i = 0; i < h; i++) {
         int x, y;
         cin >> x >> y;
@@ -236,17 +253,13 @@ int main(void)
     }
     
     for (int i = 0; i < k; i++) {
-//        cout << "TURN:" << i << '\n';
-        // print_map();
+//        cout << "TURN:" << i << ", SCORE: " << chaser.score << '\n';
+//        cout << chaser.length << ' ' << chaser.move_cnt << '\n';
+//        print_map();
         for (int r = 0; r < m; r++) {
-            if (runners[r].alive == false)
-                continue;
-            if (dist(runners[r]) <= 3)
+            if (runners[r].alive == true && dist(runners[r]) <= 3)
                 move_runner(runners[r]);
         }
-//        for (int r = 0; r < m; r++) {
-//            cout << runners[r].x << runners[r].y << runners[r].alive << runners[r].dir << '\n';
-//        }
         move_chaser();
         seek(i + 1);
     }
