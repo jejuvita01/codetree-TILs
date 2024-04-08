@@ -26,7 +26,7 @@ int m, t;
 int turn;
 pman p;
 int map[4][4] = {0, }; // 시체가 있으면 그 시체가 사라질 턴을 저장하는 맵
-vector<mon_info> mons;
+deque<mon_info> mons;
 deque<egg_info> eggs;
 int mx[] = {-1, -1, 0, 1, 1, 1, 0, -1}; // 몬스터 이동
 int my[] = {0, -1, -1, -1, 0, 1, 1, 1};
@@ -159,12 +159,16 @@ void move_pman(void)
         // cout << p.x << ',' << p.y << "에 몬스터 " << mon_cnt << "마리\n";
         if (mon_cnt > 0) {
             for (int mon = 0; mon < mons.size(); mon++) {
-                if (mons[mon].x == p.x && mons[mon].y == p.y) { // 몬스터가 있으면
+                mon_info mm = mons.front();
+                mons.pop_front();
+                if (mm.x == p.x && mm.y == p.y) { // 몬스터가 있으면
                     // cout << "몬스터 잡았다\n";
                     map[p.x][p.y] = turn + 2; // 사라질 턴 수를 맵에 기록하고
-                    mons.erase(mons.begin() + mon, mons.begin() + mon + 1); // 해당 몬스터 삭제
+//                    mons.pop_front(); // 해당 몬스터 삭제
                     mon--;
                 }
+                else
+                    mons.push_back(mm);
             }
         }
         // cout << "이제 몬스터 " << mons.size() << "마리" << '\n';
