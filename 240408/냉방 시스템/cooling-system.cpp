@@ -131,8 +131,8 @@ void spread_wind(int w, int x, int y, int c)
     
     int tmp_x, tmp_y; // 원하는 지점이 아닌, 중간 지점을 저장할 변수
     // 왼쪽 대각선 (tmp는 (w.dir - 1) % 4)
-    tmp_x = x + dx[(winds[w].dir - 1) % 4];
-    tmp_y = y + dy[(winds[w].dir - 1) % 4];
+    tmp_x = x + dx[(winds[w].dir - 1 + 4) % 4];
+    tmp_y = y + dy[(winds[w].dir - 1 + 4) % 4];
     next_x = tmp_x + dx[winds[w].dir];
     next_y = tmp_y + dy[winds[w].dir];
     if (is_inside(tmp_x, tmp_y)) { // tmp가 격자 내에 있고
@@ -181,13 +181,13 @@ void mix_cool(void)
                                 // diff = abs(static_cool[i][j] - cool[next_i][next_j]);
                                 if (static_cool[i][j] > static_cool[next_i][next_j]) { // i,j 에서 next_i, j로 이동
 //                                    cout << "1: DIFF " << i << "," << j << " 에서" << diff / 4 << " 빼준다\n";
-                                    cool[i][j] -= (diff / 4);
-                                    cool[next_i][next_j] += (diff / 4); ///////////// 여기 주의하기
+                                    cool[i][j] -= (int)(diff / 4);
+                                    cool[next_i][next_j] += (int)(diff / 4); ///////////// 여기 주의하기
                                 }
                                 else { // next_i, j에서 i, j로 이동
 //                                    cout << "2: DIFF " << next_i << "," << next_j << " 에서" << diff / 4 << " 빼준다\n";
-                                    cool[i][j] += (diff / 4);
-                                    cool[next_i][next_j] -= (diff / 4);  ///////////////////////
+                                    cool[i][j] += (int)(diff / 4);
+                                    cool[next_i][next_j] -= (int)(diff / 4);  ///////////////////////
                                 }
                             }
                         }
@@ -255,13 +255,13 @@ int main(void)
         walls.push_back(w);
     }
 
-    
 
     while (!is_cool_enough() && total_time <= 100) {
         // 모든 에어컨에서 시원함을 퍼뜨린다
         for (int w = 0; w < winds.size(); w++) {
             init_visited();
             spread_wind(w, winds[w].x + dx[winds[w].dir], winds[w].y + dy[winds[w].dir], 5);
+//            print_cool();
         }
 //        cout << "SPREAD";
 //        print_cool();
@@ -278,7 +278,7 @@ int main(void)
 //        print_cool();
         
         total_time++;
-//        cout << "TIME: " << total_time << '\n';
+//        cout << total_time << '\n';
     }
     
     if (total_time > 100)
@@ -303,3 +303,36 @@ int main(void)
     
     return 0;
 }
+
+/*
+4 1 4
+0 0 0 0
+4 0 1 1
+1 1 1 1
+0 0 0 0
+3 2 0
+*/
+
+/*
+3 2 10
+0 0 0
+0 0 0
+0 0 1
+2 3 1
+3 2 0
+ 
+이거 넣고
+cool을 문제에 있는 3x3 맵처럼 값 넣어보기
+*/
+
+
+/*
+5 2 3
+0 0 0 0 0
+2 0 1 1 1
+0 0 1 1 0
+0 0 0 0 0
+0 3 0 0 0
+3 2 0
+3 2 1
+*/
