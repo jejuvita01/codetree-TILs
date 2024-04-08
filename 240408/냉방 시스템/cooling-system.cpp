@@ -136,7 +136,7 @@ void spread_wind(int w, int x, int y, int c)
     next_x = tmp_x + dx[winds[w].dir];
     next_y = tmp_y + dy[winds[w].dir];
     if (is_inside(tmp_x, tmp_y)) { // tmp가 격자 내에 있고
-        if (!is_wall_there((winds[w].dir - 1) % 4, x, y, tmp_x, tmp_y)) // tmp로 이동이 가능하고
+        if (!is_wall_there((winds[w].dir - 1 + 4) % 4, x, y, tmp_x, tmp_y)) // tmp로 이동이 가능하고
             if (is_inside(next_x, next_y)) // next가 격자 내에 있고
                 if (!is_wall_there(winds[w].dir, tmp_x, tmp_y, next_x, next_y)) // tmp와 next간에 벽이 없고
                     if (!visited[next_x][next_y]) // 퍼뜨리지 않았다면
@@ -255,7 +255,6 @@ int main(void)
         walls.push_back(w);
     }
 
-
     while (!is_cool_enough() && total_time <= 100) {
         // 모든 에어컨에서 시원함을 퍼뜨린다
         for (int w = 0; w < winds.size(); w++) {
@@ -278,7 +277,7 @@ int main(void)
 //        print_cool();
         
         total_time++;
-//        cout << total_time << '\n';
+//        cout << "TIME: " << total_time << '\n';
     }
     
     if (total_time > 100)
@@ -303,36 +302,3 @@ int main(void)
     
     return 0;
 }
-
-/*
-4 1 4
-0 0 0 0
-4 0 1 1
-1 1 1 1
-0 0 0 0
-3 2 0
-*/
-
-/*
-3 2 10
-0 0 0
-0 0 0
-0 0 1
-2 3 1
-3 2 0
- 
-이거 넣고
-cool을 문제에 있는 3x3 맵처럼 값 넣어보기
-*/
-
-
-/*
-5 2 3
-0 0 0 0 0
-2 0 1 1 1
-0 0 1 1 0
-0 0 0 0 0
-0 3 0 0 0
-3 2 0
-3 2 1
-*/
