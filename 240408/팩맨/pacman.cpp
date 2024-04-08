@@ -87,16 +87,25 @@ void get_dir(int x, int y, int best_dir[3])
                         k_y = j_y + py[k];
                         if (is_inside(k_x, k_y)) {
                             mon_k = how_many_monster_here(k_x, k_y);
+                            int total = 0;
+                            total += mon_i; // i를 일단 더하고
+                            if (!(i_x == j_x && i_y == j_y)) { // i j 좌표가 같지 않으면
+                                total += mon_j; // j를 더하고
+                                if (!(i_x == k_x && i_y == k_y) && !(j_x == k_x && j_y == k_y)) // k가 i j 좌표와 같지 않으면
+                                    total += mon_k; // k도 더한다
+                            }
+                            else { // i j 좌표가 같으면
+                                if (k_x != i_x && k_y != i_y) // k가 i와 같지 않으면
+                                    total += mon_k; // k를 더한다
+                            }
                             // cout << "k: " << k_x << ',' << k_y <<"에 몬스터 " << mon_k << "마리\n";
-                            if (mon_i + mon_j + mon_k > max_mon) {
-                                if (!((i_x == j_x && i_y == j_y) || (j_x == k_x && j_y == k_y) || (k_x == i_x && k_y == i_y))) {
-                                    max_mon = mon_i + mon_j + mon_k;
-                                    // cout << "i, j, k: " << i << ',' << j <<',' << k <<',' <<"에서 몬스터 " << max_mon << "마리로 업데이트 했다!\n";
-                                    best_dir[0] = i;
-                                    best_dir[1] = j;
-                                    best_dir[2] = k;
-                                    is_updated = true;
-                                }
+                            if (total > max_mon) {
+                                max_mon = total;
+                                // cout << "i, j, k: " << i << ',' << j <<',' << k <<',' <<"에서 몬스터 " << total << "마리로 업데이트 했다!\n";
+                                best_dir[0] = i;
+                                best_dir[1] = j;
+                                best_dir[2] = k;
+                                is_updated = true;
                             }
                         }
                     }
