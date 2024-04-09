@@ -96,7 +96,7 @@ void select_basecamp(int user_idx)
     
     int min_dist = 15 * 15 + 1;
     int min_idx = -1;
-    for (int i = 0; i < bases.size(); i++) { // base를 전체를 돌며
+    for (int i = 0; i < base_cnt; i++) { // base를 전체를 돌며
         if (bases[i].selected == false) {
             if (visited[bases[i].x][bases[i].y] < min_dist || min_idx == -1) {// 거리가 min_dist보다 작으면
                 min_dist = visited[bases[i].x][bases[i].y]; // min_dist 업데이트
@@ -146,7 +146,7 @@ void user_to_store_bfs(int idx, deque<int> direction[15][15]) // user의 idx == 
                         direction[next.x][next.y].push_back(i); // 다음 위치에 어떤 방향에서 왔는지를 저장해주고
                         dq.push_back(next); // dq에 넣어주고
                         visited[next.x][next.y] = 1; // visited를 1로 처리한다
-                        // cout << "NEXT: " << next.x << ' ' << next.y << ", dir: " << direction[next.x][next.y].front() << '\n';
+//                        cout << "NEXT: " << next.x << ' ' << next.y << ", dir: " << direction[next.x][next.y].front() << '\n';
                         if (next.x == stores[idx].x && next.y == stores[idx].y) // 만약 next가 store라면 리턴
                             return;
                     }
@@ -165,7 +165,7 @@ int select_route(int idx, deque<int> direction[15][15]) // 다음 이동할 dire
     int now_dir = -1; // 현재 칸에서 이동한 dir
     int change_dir = -1; // 반대로 추적하려면 이동해야할 dir
     
-    // cout  << "USER" << idx << " 의 경로를 역추적한다" << '\n';
+//    cout  << "USER" << idx << " 의 경로를 역추적한다" << '\n';
     
     now.x = next.x = stores[idx].x;
     now.y = next.y = stores[idx].y;
@@ -180,7 +180,7 @@ int select_route(int idx, deque<int> direction[15][15]) // 다음 이동할 dire
             case DOWN: change_dir = UP; break;
             default: break;
         };
-        // cout << "원래 방향: " << now_dir << ", 변경된 방향: " << change_dir << '\n';
+//        cout << "원래 방향: " << now_dir << ", 변경된 방향: " << change_dir << '\n';
         next.x = now.x + dx[change_dir];
         next.y = now.y + dy[change_dir];
         now.x = next.x;
@@ -192,7 +192,7 @@ int select_route(int idx, deque<int> direction[15][15]) // 다음 이동할 dire
 
 void move_user(int idx) // user의 idx를 전달 받음
 {
-    // cout << idx << "번 유저 이동시키기\n";
+//    cout << idx << "번 유저 이동시키기\n";
     deque<int> direction[15][15];
     int next_dir = -1;
     init_visited();
@@ -203,7 +203,7 @@ void move_user(int idx) // user의 idx를 전달 받음
         users[idx].y += dy[next_dir];
     }
     
-    // cout << idx << "번 유저 " << users[idx].x << ' '<< users[idx].y << " 로 이동\n";
+//    cout << idx << "번 유저 " << users[idx].x << ' '<< users[idx].y << " 로 이동\n";
 }
 
 int main(void)
@@ -224,6 +224,7 @@ int main(void)
                 b.y = j;
                 b.selected = false;
                 bases.push_back(b);
+                base_cnt++;
             }
         }
     }
@@ -252,7 +253,7 @@ int main(void)
     // total_time 0부터 m - 1까지 유저를 넣고 이동시키며 users 벡터 생성
     for (int i = 0; i < m; i++) {
         if (total_time == 0) { // 초기상태일때
-            // cout << "첫번째 유저 차례\n";
+//            cout << "첫번째 유저 차례\n";
             init_visited();
             select_basecamp(i); // user0의 베이스 캠프를 정하고,
             users[i].x = bases[users[i].base_idx].x; // user0을 거기로 이동시키고
@@ -260,7 +261,7 @@ int main(void)
             map[users[i].x][users[i].y] = -1; // user0의 베이스캠프를 map 에서 -1로 만들기
             bases[users[i].base_idx].selected = true; // user0의 베이스캠프를 selected로 만든다
             users[i].is_moving = true; // user0의 is_moving을 true로 만든다
-            // cout << "첫번째 유저의 베이스 캠프: " << bases[users[i].base_idx].x << ' ' << bases[users[i].base_idx].y << '\n';
+//            cout << "첫번째 유저의 베이스 캠프: " << bases[users[i].base_idx].x << ' ' << bases[users[i].base_idx].y << '\n';
         }
         else {
             for (int j = 0; j < i; j++) { // user들을 확인하며
@@ -275,11 +276,11 @@ int main(void)
                         stores[j].visited = true; // 그 칸을 visited로 만들고
                         map[stores[j].x][stores[j].y] = -1; // map에서 -1로 만들고
                         in_store_cnt++; // store에 들어간 user 수를 증가시켜준다
-                        // cout << "USER" << j << " 는 이제 움직이지 않는다\n";
+//                        cout << "USER" << j << " 는 이제 움직이지 않는다\n";
                     }
                 }
             }
-            // cout << "USER" << i << " 의 basecamp: ";
+//            cout << "USER" << i << " 의 basecamp: ";
             init_visited();
             select_basecamp(i); // user(i)의 베이스 캠프를 정해서
             users[i].x = bases[users[i].base_idx].x; // user(i)을 거기로 이동시키고
@@ -287,10 +288,10 @@ int main(void)
             map[users[i].x][users[i].y] = -1; // user(i)의 베이스캠프를 map에서 -1로 만들고
             bases[users[i].base_idx].selected = true; // user(i)의 베이스캠프를 selected로 만든다
             users[i].is_moving = true; // user(i)의 활동 상태를 true로 만든다
-            // cout << bases[users[i].base_idx].x << ' ' << bases[users[i].base_idx].y << '\n';
+//            cout << bases[users[i].base_idx].x << ' ' << bases[users[i].base_idx].y << '\n';
         }
         total_time++;
-        // cout << "TIME: " << total_time << '\n';
+//        cout << "TIME: " << total_time << '\n';
     }
     
     while (in_store_cnt < m) { // store에 모든 유저가 도착할때까지 반복
@@ -305,12 +306,12 @@ int main(void)
                     stores[i].visited = true; // 그 칸을 visited로 만들고
                     map[stores[i].x][stores[i].y] = -1; // map에서 -1로 만들고
                     in_store_cnt++; // store에 들어간 user 수를 증가시켜준다
-                    // cout << "USER" << i << " 는 이제 움직이지 않는다\n";
+//                    cout << "USER" << i << " 는 이제 움직이지 않는다\n";
                 }
             }
         }
         total_time++;
-        // cout << "TIME: " << total_time << '\n';
+//        cout << "TIME: " << total_time << '\n';
     }
     
     cout << total_time;
