@@ -185,6 +185,8 @@ int select_route(int idx, deque<int> direction[15][15]) // 다음 이동할 dire
         next.y = now.y + dy[change_dir];
         now.x = next.x;
         now.y = next.y;
+        if (now.x == users[idx].x && now.y == users[idx].y)
+            break;
     }
     
     return now_dir;
