@@ -203,8 +203,8 @@ int main(void)
             }
         }
         
-//        if (moving_user == 0)
-//            break;
+       if (moving_user == 0)
+           break;
         
         int x_start, y_start, length;
         find_range(x_start, y_start, length); // 최소 사각형의 범위를 찾고
