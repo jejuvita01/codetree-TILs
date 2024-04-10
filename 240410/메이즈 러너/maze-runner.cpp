@@ -37,13 +37,14 @@ void print_map(void)
 void print_user(void)
 {
     for (int i = 0; i < M; i++) {
-        // cout << "USER" << i << "는 " << (user[i].is_moving ? "맵에있고, " : "탈출했고, ") << user[i].x << ',' << user[i].y << " 에 있다." << '\n';
+        cout << "USER" << i << "는 " << (user[i].is_moving ? "맵에있고, " : "탈출했고, ") << user[i].x << ',' << user[i].y << " 에 있다." << '\n';
     }
 }
 
 void spin_map(int x_start, int y_start, int length)
 {
     int tmp_map[10][10] = {0, };
+    int changed_flag[10] = {0, };
     
     // tmp_map에 회전한 결과를 저장하고
     for (int i = 0; i < length; i++) {
@@ -60,9 +61,22 @@ void spin_map(int x_start, int y_start, int length)
                 exit_x = x_start + i; // 출구 정보 업데이트
                 exit_y = y_start + j;
             }
+            for (int u = 0; u < M; u++) {
+                if (user[u].is_moving) {
+                    if (changed_flag[u] == 0) {
+                        if (user[u].x == (x_start + length - j - 1) && user[u].y == (y_start + i)) {
+                            user[u].x = i + x_start;
+                            user[u].y = j + y_start;
+                            // cout << "USER" << u << "를 " << i + x_start << ',' << j + y_start << "로 이동시켰다\n";
+                            changed_flag[u] = 1;
+                        }
+                    }
+                }
+            }
         }
     }
     
+    /*
     // user_map을 만든다
     int user_map[10][10] = {-1, };
     for (int i = 0; i < N; i++)
@@ -75,14 +89,14 @@ void spin_map(int x_start, int y_start, int length)
         }
     }
     
-    // cout << "\nUSER MAP\n";
+    cout << "\nUSER MAP\n";
     
-    // for (int i = 0; i < N; i++) {
-    //     for (int j = 0; j < N; j++) {
-    //         cout << user_map[i][j] << ' ';
-    //     }
-    //     cout << '\n';
-    // }
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            cout << user_map[i][j] << ' ';
+        }
+        cout << '\n';
+    }
     
     // tmp_map을 초기화한다
     for (int i = 0; i < N; i++)
@@ -100,12 +114,14 @@ void spin_map(int x_start, int y_start, int length)
         for (int j = y_start; j < y_start + length; j++) {
             user_map[i][j] = tmp_map[i - x_start][j - y_start];
             if (user_map[i][j] != -1) { // 유저 발견하면
-                // cout << "USER" << user_map[i][j] << "를 " << i << ',' << j << "로 이동시켰다\n";
+                
+                cout << "USER" << user_map[i][j] << "를 " << i << ',' << j << "로 이동시켰다\n";
                 user[user_map[i][j]].x = i;
                 user[user_map[i][j]].y = j;
             }
         }
     }
+    */
 }
 
 int get_dist(int x, int y) // u와 출구와의 거리를 리턴
