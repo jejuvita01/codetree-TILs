@@ -61,7 +61,7 @@ void spin_map(int x_start, int y_start, int length)
                 exit_x = x_start + i; // 출구 정보 업데이트
                 exit_y = y_start + j;
             }
-            for (int u = 0; u < M; u++) {
+            for (int u = 0; u < M; u++) { // 유저 이동시켜주기
                 if (user[u].is_moving) {
                     if (changed_flag[u] == 0) {
                         if (user[u].x == (x_start + length - j - 1) && user[u].y == (y_start + i)) {
@@ -75,53 +75,6 @@ void spin_map(int x_start, int y_start, int length)
             }
         }
     }
-    
-    /*
-    // user_map을 만든다
-    int user_map[10][10] = {-1, };
-    for (int i = 0; i < N; i++)
-        for (int j = 0; j < N; j++)
-            user_map[i][j] = -1;
-    
-    for (int u = 0; u < M; u++) {
-        if (user[u].is_moving == true) {
-            user_map[user[u].x][user[u].y] = u;
-        }
-    }
-    
-    cout << "\nUSER MAP\n";
-    
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            cout << user_map[i][j] << ' ';
-        }
-        cout << '\n';
-    }
-    
-    // tmp_map을 초기화한다
-    for (int i = 0; i < N; i++)
-        for (int j = 0; j < N; j++)
-            tmp_map[i][j] = -1;
-    
-    // tmp_map에 회전한 결과를 저장한다
-    for (int i = 0; i < length; i++) {
-        for (int j = 0; j < length; j++) {
-            tmp_map[i][j] = user_map[x_start + length - j - 1][y_start + i];
-        }
-    }
-    
-    for (int i = x_start; i < x_start + length; i++) {
-        for (int j = y_start; j < y_start + length; j++) {
-            user_map[i][j] = tmp_map[i - x_start][j - y_start];
-            if (user_map[i][j] != -1) { // 유저 발견하면
-                
-                cout << "USER" << user_map[i][j] << "를 " << i << ',' << j << "로 이동시켰다\n";
-                user[user_map[i][j]].x = i;
-                user[user_map[i][j]].y = j;
-            }
-        }
-    }
-    */
 }
 
 int get_dist(int x, int y) // u와 출구와의 거리를 리턴
@@ -146,7 +99,7 @@ void move_user(int idx) // user의 idx를 전달받음
         next_x = user[idx].x + dx[i];
         next_y = user[idx].y + dy[i];
         if (is_inside(next_x, next_y)) { // 이동한 곳이 격자 내에 있고
-            if (map[next_x][next_y] == 0 || map[next_x][next_y] == -1) {// 벽이 아니고
+            if (!(1 <= map[next_x][next_y] && map[next_x][next_y] <= 9)) {// 벽이 아니고
                 if (get_dist(next_x, next_y) < min_dist) {// min_dist보다 가까워지면
                     // cout << "USER" << idx << "는 " << user[idx].x << ',' << user[idx].y << " 에서 " << next_x <<',' << next_y << " 로 이동했다\n";
                     total_move++;
@@ -163,57 +116,37 @@ void move_user(int idx) // user의 idx를 전달받음
     }
 }
 
-int get_closest_user(void)
+void find_range(int& x_start, int& y_start, int& length)
 {
-    int min_dist = 100;
-    int min_idx = -1;
-    
-    for (int u = 0; u < M; u++) {
-        if (user[u].is_moving == true) { // user가 맵에 있고
-            int dist = get_dist(user[u].x, user[u].y);
-            if (dist < min_dist || min_idx == -1) {// 거리가 가까우면
-                min_dist = dist; // 업데이트
-                min_idx = u;
-            }
-            else if (dist == min_dist) {// 거리가 같으면
-                if (user[u].x < user[min_idx].x) {// r이 작으면 업데이트
-                    min_dist = dist;
-                    min_idx = u;
-                }
-                else if (user[u].x == user[min_idx].x) {// r이 같으면
-                    if (user[u].y < user[min_idx].y) {// c가 작으면 업데이트
-                        min_dist = dist;
-                        min_idx = u;
+    for (int l = 2; l <= N; l++) {
+        for (int i = 0; i <= N - l; i++) {
+            for (int j = 0; j <= N - l; j++) {
+                int i_end = i + l - 1;
+                int j_end = j + l - 1;
+                bool is_exit = false;
+                bool is_user = false;
+                
+                if (i <= exit_x && exit_x <= i_end && j <= exit_y && exit_y <= j_end)
+                    is_exit = true;
+                else
+                    continue;
+                
+                for (int u = 0; u < M; u++) {
+                    if (user[u].is_moving == true) {
+                        if (i <= user[u].x && user[u].x <= i_end && j <= user[u].y && user[u].y <= j_end)
+                            is_user = true;
                     }
+                }
+                
+                if (is_exit == true && is_user == true) {
+                    x_start = i;
+                    y_start = j;
+                    length = l;
+                    return;
                 }
             }
         }
     }
-    
-    return min_idx;
-}
-
-void find_range(int& x_start, int& y_start, int& length)
-{
-    int idx = get_closest_user(); // exit과 가장 가까이 있는 user의 idx를 구한다
-    // cout << "제일 가까운 유저는 " << user[idx].x << ',' << user[idx].y << " 에 있다\n";
-    
-    // 변 길이를 구한다
-    length = max(abs(user[idx].x - exit_x) + 1, abs(user[idx].y - exit_y) + 1);
-    
-    // 제일 오른쪽 끝에 있는 x, y값을 구한다
-    int biggest_x = (user[idx].x > exit_x ? user[idx].x : exit_x);
-    int biggest_y = (user[idx].y > exit_y ? user[idx].y : exit_y);
-    
-    x_start = biggest_x - (length - 1);
-    y_start = biggest_y - (length - 1);
-    
-    if (x_start < 0)
-        x_start = 0;
-    if (y_start < 0)
-        y_start = 0;
-    
-    // cout << "최소 사각형의 시작점은 " << x_start << ',' << y_start << " 이고 길이는 " << length << '\n';
 }
 
 void reduce_power(int x_start, int y_start, int length)
@@ -270,8 +203,8 @@ int main(void)
             }
         }
         
-        if (moving_user == 0)
-            break;
+//        if (moving_user == 0)
+//            break;
         
         int x_start, y_start, length;
         find_range(x_start, y_start, length); // 최소 사각형의 범위를 찾고
@@ -293,3 +226,16 @@ int main(void)
     
     return 0;
 }
+
+/*
+5 3 8
+0 0 0 0 1
+9 2 2 0 0
+0 1 0 1 0
+0 0 0 1 0
+0 0 0 0 0
+1 3
+3 1
+3 5
+5 5
+*/
