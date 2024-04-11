@@ -76,6 +76,8 @@ void select_attacker(void)
             }
         }
     }
+    
+    last_attack[a.x][a.y] = turn;
 }
 
 void select_defenser(void)
@@ -86,26 +88,30 @@ void select_defenser(void)
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < M; j++) {
             if (map[i][j] != 0) { // 부서진 포탑이 아니고
-                if (i != a.x && j != a.y) { // 공격자가 아닐 때
+                if (!(i == a.x && j == a.y)) { // 공격자가 아닐 때
                     if (max_power < map[i][j] || (d.x == -1 && d.y == -1)) { // 공격력이 더 크면 업데이트
+                        // cout << "0여기서 " << i << ',' << j << " 로 업데이트\n";
                         max_power = map[i][j];
                         d.x = i;
                         d.y = j;
                     }
                     else if (max_power == map[i][j]) {// 공격력이 같으면
                         if (last_attack[i][j] < last_attack[d.x][d.y]) {// 공격한지 더 오래됐으면 업데이트
+                            // cout << "1여기서 " << i << ',' << j << " 로 업데이트\n";
                             max_power = map[i][j];
                             d.x = i;
                             d.y = j;
                         }
                         else if (last_attack[i][j] == last_attack[d.x][d.y]) {// 공격한 시기가 같으면
                             if (i + j < d.x + d.y) {// 행 + 열이 작으면 업데이트
+                                // cout << "2여기서 " << i << ',' << j << " 로 업데이트\n";
                                 max_power = map[i][j];
                                 d.x = i;
                                 d.y = j;
                             }
                             else if (i + j == d.x + d.y) {// 행 + 열이 같으면
                                 if (j < d.y) {// 열값이 작으면 업데이트
+                                    // cout << "3여기서 " << i << ',' << j << " 로 업데이트\n";
                                     max_power = map[i][j];
                                     d.x = i;
                                     d.y = j;
@@ -133,12 +139,14 @@ void bfs(deque<int> dir[10][10])
             point next;
             next.x = (now.x + dx[i] + N) % N;
             next.y = (now.y + dy[i] + N) % M;
-            if (visited[next.x][next.y] == 0) {// 방문하지 않았으면
-                visited[next.x][next.y] = visited[now.x][now.y] + 1; // 방문하기
-                dir[next.x][next.y].push_back(i);
-                dq.push_back(next);
-                if (next.x == d.x && next.y == d.y) // 만약 공격자에 도달했으면 return
-                    return;
+            if (map[next.x][next.y] != 0) {// 부서지지 않았고,
+                if (visited[next.x][next.y] == 0) {// 방문하지 않았으면
+                    visited[next.x][next.y] = visited[now.x][now.y] + 1; // 방문하기
+                    dir[next.x][next.y].push_back(i);
+                    dq.push_back(next);
+                    if (next.x == d.x && next.y == d.y) // 만약 공격자에 도달했으면 return
+                        return;
+                }
             }
         }
     }
@@ -254,7 +262,8 @@ int main(void)
     }
     
     // turn 을 돌며 동작 수행
-    for (turn = 0; turn < K; turn++) {
+    for (turn = 1; turn <= K; turn++) {
+        // cout << "\n\n\nTURN: " << turn + 1 << '\n';
         if (left_tower() == 1) // 남은 포탑 개수 확인
             break;
         select_attacker(); // 공격자를 선정한다
@@ -269,6 +278,7 @@ int main(void)
         // cout << "방어자까지의 경로는 총 : " << visited[d.x][d.y] << '\n';
         deque<point> attacked; // 직간접적으로 공격받은 것들을 저장할 변수
         if (visited[d.x][d.y] != 0) {// 대상자의 visited[][]가 0이 아니라면
+            // cout << "LASER\n";
             laser(dir, attacked); // 레이저
             // cout << "공격받은 사람은: ";
             // for (int i = 0; i < attacked.size(); i++) {
@@ -276,11 +286,14 @@ int main(void)
             // }
             // cout << '\n';
         }
-        else // 대상자를 레이저 할 수 없으면
+        else { // 대상자를 레이저 할 수 없으면
+            // cout << "THROW\n";
             throw_power(attacked); // 포탄 공격
+        }
         if (left_tower() == 1) // 남아있는 포탑 개수 확인
             break;
         plus_power(attacked); // 공격받지 않은 포탑들을의 공격력을 + 1 해준다
+        // print_map();
     }
     
     int answer = 0;
