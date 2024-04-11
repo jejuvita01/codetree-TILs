@@ -138,7 +138,7 @@ void bfs(deque<int> dir[10][10])
         for (int i = 0; i < 4; i++) {
             point next;
             next.x = (now.x + dx[i] + N) % N;
-            next.y = (now.y + dy[i] + N) % M;
+            next.y = (now.y + dy[i] + M) % M;
             if (map[next.x][next.y] != 0) {// 부서지지 않았고,
                 if (visited[next.x][next.y] == 0) {// 방문하지 않았으면
                     visited[next.x][next.y] = visited[now.x][now.y] + 1; // 방문하기
