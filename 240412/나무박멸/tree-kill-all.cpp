@@ -244,10 +244,10 @@ int main(void)
         grow_tree(); // 나무 성장
         spread_tree(); // 나무 번식
         int x, y;
+        x = y = -1;
         find_biggest(x, y); // 제초제의 영향이 가장 큰 칸 찾기
-        kill(x, y); // 제초제 뿌리기
-//        print_map();
-//        print_killer_map();
+        if (!(x == -1 && y == -1))
+            kill(x, y); // 제초제 뿌리기
     }
     
     cout << total_kill << '\n';
