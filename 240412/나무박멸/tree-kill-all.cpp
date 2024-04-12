@@ -70,12 +70,12 @@ void spread_tree(void)
     
     for (int i = 0; i < n; i++) {// 맵을 돌며
         for (int j = 0; j < n; j++) {
-            if (map[i][j] > 0) { // 나무를 발견하면
+            if (map[i][j] > 0) { // i, j에서 나무를 발견하면
                 int blank = 0; // 주변에 몇 칸 퍼뜨릴 수 있는지 저장하는 변수
                 for (int d = 0; d < 4; d++) {
                     int x = i + tx[d];
                     int y = j + ty[d];
-                    if (is_inside(x, y)) { // 격자 내에 있고
+                    if (is_inside(x, y)) { // x, y가 격자 내에 있고
                         if (killer[x][y] == 0) { // 제초제가 없으며
                             if (map[x][y] == 0) { // 빈칸이면
                                 blank++; // 주변 몇 칸에 퍼뜨릴 수 있는지 카운트
@@ -83,12 +83,12 @@ void spread_tree(void)
                         }
                     }
                 }
-                if (blank > 0) {
-                    int spread = map[i][j] / blank; // 퍼뜨릴 나무의 수를 (본인 / 카운트) 로 계산하고
+                if (blank > 0) { // 퍼뜨릴 칸이 0 초과면
+                    int spread = map[i][j] / blank; // i, j에서 퍼뜨릴 나무의 수를 (본인 / 카운트) 로 계산하고
                     for (int d = 0; d < 4; d++) {// 다시 네 방향을 돌며
                         int x = i + tx[d];
                         int y = j + ty[d];
-                        if (is_inside(x, y)) { // 격자 내에 있고
+                        if (is_inside(x, y)) { // x, y가 격자 내에 있고
                             if (killer[x][y] == 0) { // 제초제가 없으며
                                 if (map[x][y] == 0) { // 빈칸이면
                                     // 퍼뜨릴 수 있는 칸이면 plus_tree에 더해주기
@@ -113,21 +113,23 @@ void find_biggest(int& max_x, int& max_y)
     
     for (int i = 0; i < n; i++) { // 맵 돌기
         for (int j = 0; j < n; j++) {
-            if (map[i][j] > 0) {
+            if (map[i][j] > 0) { // i, j가 나무면
                 int cnt = map[i][j]; // 일단 본인의 크기만큼 사라짐
-                for (int d = 0; d < 4; d++) { // 나무에서 대각선 방향만큼 돌면서
+                for (int d = 0; d < 4; d++) { // i, j 나무에서 대각선 방향만큼 돌면서
                     int x = i + kx[d];
                     int y = j + ky[d];
-                    if (is_inside(x, y)) { // 격자 내에 있다면
+                    if (is_inside(x, y)) { // x, y가 격자 내에 있다면
                         if (map[x][y] > 0) { // 나무가 있다면
                             cnt += map[x][y];
-                            for (int r = 1; r < k; r++) {// 그쪽 대각선으로 k 만큼 뿌리기
+                            for (int r = 1; r < k; r++) {// x, y 쪽 대각선으로 k 만큼 뿌리기
                                 int new_x = x + r * kx[d];
                                 int new_y = y + r * ky[d];
-                                if (is_inside(new_x, new_y)) { // 격자 내에 있고
+                                if (is_inside(new_x, new_y)) { // new_x, new_y가 격자 내에 있고
                                     if (map[new_x][new_y] > 0) { // 나무가 있다면
                                         cnt += map[new_x][new_y]; // 그만큼 또 없애기
                                     }
+                                    else
+                                        r = k;
                                 }
                             }
                         }
@@ -166,7 +168,7 @@ void remove_killer(void)
 {
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
-            if (killer[i][j] < year)
+            if (killer[i][j] == year)
                 killer[i][j] = 0;
         }
     }
@@ -176,7 +178,7 @@ void kill(int x, int y)
 {
     total_kill += map[x][y];
     map[x][y] = 0;
-    killer[x][y] = year + c;
+    killer[x][y] = year + c + 1;
     
     int i, j, new_i, new_j;
     for (int d = 0; d < 4; d++) { // 대각선 네 방향 탐색
@@ -186,7 +188,7 @@ void kill(int x, int y)
             if (map[i][j] > 0) { // 그 칸이 나무이면
                 total_kill += map[i][j];
                 map[i][j] = 0;
-                killer[i][j] = year + c;
+                killer[i][j] = year + c + 1;
                 for (int r = 1; r < k; r++) { // r 범위만큼 더 확산
                     new_i = i + r * kx[d];
                     new_j = j + r * ky[d];
@@ -194,19 +196,30 @@ void kill(int x, int y)
                         if (map[new_i][new_j] > 0) { // 그 칸이 나무이면
                             total_kill += map[new_i][new_j];
                             map[new_i][new_j] = 0;
-                            killer[new_i][new_j] = year + c;
+                            killer[new_i][new_j] = year + c + 1;
                         }
                         else { // 그 칸이 나무가 아니면
-                            killer[new_i][new_j] = year + c; // 여기까지만 제초제 뿌리고
+                            killer[new_i][new_j] = year + c + 1; // 여기까지만 제초제 뿌리고
                             r = k; // 반복문 종료
                         }
                     }
                 }
             }
             else { // 나무가 아니면 그 칸까지만 제초제 뿌리기
-                killer[i][j] = year + c;
+                killer[i][j] = year + c + 1;
             }
         }
+    }
+}
+
+void print_killer_map(void)
+{
+    cout << "\n\nKILLER\n";
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            cout << killer[i][j] << ' ';
+        }
+        cout << '\n';
     }
 }
 
@@ -233,6 +246,8 @@ int main(void)
         int x, y;
         find_biggest(x, y); // 제초제의 영향이 가장 큰 칸 찾기
         kill(x, y); // 제초제 뿌리기
+//        print_map();
+//        print_killer_map();
     }
     
     cout << total_kill << '\n';
