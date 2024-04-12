@@ -90,6 +90,7 @@ void dfs(int i, int j, int idx, point& tail_point)
             if (visited[next_x][next_y] == 0) { // 방문하지 않았고
                 if (map[next_x][next_y] == 2 || map[next_x][next_y] == 3) { // 중간 사람이거나 꼬리 사람이면
                     if (map[next_x][next_y] == 3) { // 꼬리 사람이면 좌표 저장해놓기
+                        // cout << "좌표 저장함\n";
                         tail_point = {next_x, next_y};
                     }
                     if (map[next_x][next_y] == 2) { // 중간 사람이면 바로 dfs
@@ -137,8 +138,10 @@ void move_people(int idx) // team의 idx
         team[idx].people[i].x = to.x; // team[idx].people[i]에 to의 좌표를 복사한다
         team[idx].people[i].y = to.y;
 //        cout << map[from.x][from.y] << " 번째 사람 옮기기\n";
-        map[to.x][to.y] = map[from.x][from.y]; // map을 변경해준다
-//        print_map();
+        if (map[from.x][from.y] == 1)
+            map[to.x][to.y] = 3; // map을 변경해준다
+        else
+            map[to.x][to.y] = map[from.x][from.y];
         to.x = from.x;
         to.y = from.y;
         
@@ -147,8 +150,8 @@ void move_people(int idx) // team의 idx
     
     if (tail == 4)
         map[from.x][from.y] = 4; // 꼬리사람이 이동한 흔적을 map에서 4로 지워준다
-    else
-        map[from.x][from.y] = 3;
+//    else
+//        map[to.x][to.y] = 3;
 }
 
 point throw_ball(void)
@@ -283,17 +286,18 @@ int main(void)
         point p = throw_ball(); // 공을 던진다
         if (!(p.x == -1 && p.y == -1)) {
             int t = find_team(p); // p가 -1, -1 이 아니면 p가 속한 팀을 찾는다
-//            cout << "\n\np: " << p.x << ',' << p.y << "는 " << t << "번 팀에 속해있다\n";
+            // cout << "\n\np: " << p.x << ',' << p.y << "는 " << t << "번 팀에 속해있다\n";
             if (t != -1) {
+                // cout << "\n\nREVERSE\n";
                 reverse_team(t); // p가 속한 팀의 방향을 바꾼다(머리, 꼬리 맵 값도 바꿔야함)
-//                print_map();
-//                for (int i = 0; i < M; i++) {
-//                    cout << i + 1 << "번째 팀은 " << team[i].idx << "의 인덱스를 가지고, \n";
-//                    for (int j = 0; j < team[i].people.size(); j++) {
-//                        cout << '(' << team[i].people[j].x << ',' << team[i].people[j].y << ')' << ',';
-//                    }
-//                    cout << "순서대로 사람이 있다.\n";
-//                }
+                // print_map();
+                // for (int i = 0; i < M; i++) {
+                //     // cout << i + 1 << "번째 팀은 " << team[i].idx << "의 인덱스를 가지고, \n";
+                //     for (int j = 0; j < team[i].people.size(); j++) {
+                //         cout << '(' << team[i].people[j].x << ',' << team[i].people[j].y << ')' << ',';
+                //     }
+                //     cout << "순서대로 사람이 있다.\n";
+                // }
             }
         }
         
